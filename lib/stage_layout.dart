@@ -50,75 +50,62 @@ class StageRender extends RenderBox
     });
   }
 
-  double measureDx(RenderBox child,StageParentData childParentData){
+  double measureDx(RenderBox child, StageParentData childParentData) {
     double xStartPoint;
     double xEndPoint;
     double dx;
-    if (childParentData.beRight != null) {
-      if (childParentData.beRight == PARENT) {
-        xEndPoint = size.width;
-      } else {
-        var targetRenderBox = getRenderBoxByTag(childParentData.beRight);
-        assert(targetRenderBox != null, 'Tag is wrong!');
-        var targetParentData = targetRenderBox.parentData as StageParentData;
-        xEndPoint = targetParentData.offset.dx +
-            targetRenderBox.getMaxIntrinsicWidth(0);
-      }
-    }
 
-    if (childParentData.beLeft != null) {
-      if (childParentData.beLeft == PARENT) {
-        xStartPoint = 0;
-      } else {
-        var targetRenderBox = getRenderBoxByTag(childParentData.beLeft);
-        assert(targetRenderBox != null, 'Tag is wrong!');
-        var targetParentData = targetRenderBox.parentData as StageParentData;
-        xStartPoint = targetParentData.offset.dx;
+    var beLeftPoint = measurePoint(childParentData.beLeft, child, childParentData, false, true, false);
+    var toLeftPoint = measurePoint(childParentData.toLeft, child, childParentData, false, true, true);
+    var beRightPoint = measurePoint(childParentData.beRight, child, childParentData, false, false, false);
+    var toRightPoint = measurePoint(childParentData.toRight, child, childParentData, false, false, true);
+
+    print('$beLeftPoint $toLeftPoint $beRightPoint $toRightPoint');
+
+    [beLeftPoint,toLeftPoint,beRightPoint,toRightPoint].forEach((element) {
+      if(element != null){
+        if(xStartPoint == null)
+          xStartPoint = element;
+        else
+          xEndPoint = element;
       }
-    }
+    });
+
+    print("$xStartPoint  $xEndPoint");
 
     if (xStartPoint == null && xEndPoint == null) {
       dx = 0.0;
-    }else if (xStartPoint == null) {
+    } else if (xStartPoint == null) {
       dx = xEndPoint - child.getMaxIntrinsicWidth(0);
     } else if (xEndPoint == null) {
       dx = xStartPoint;
     } else {
-      dx = (xEndPoint - xStartPoint) / 2 +
-          xStartPoint -
+      dx = (xEndPoint - xStartPoint).abs() / 2 +
+          math.min(xStartPoint, xEndPoint) -
           child.getMaxIntrinsicWidth(0) / 2;
     }
 
     return dx;
   }
 
-  double measureDy(RenderBox child,StageParentData childParentData){
+  double measureDy(RenderBox child, StageParentData childParentData) {
     double yStartPoint;
     double yEndPoint;
     double dy;
 
-    if (childParentData.beTop != null) {
-      if (childParentData.beTop == PARENT) {
-        yStartPoint = 0;
-      } else {
-        var targetRenderBox = getRenderBoxByTag(childParentData.beTop);
-        assert(targetRenderBox != null, 'Tag is wrong!');
-        var targetParentData = targetRenderBox.parentData as StageParentData;
-        yStartPoint = targetParentData.offset.dy;
-      }
-    }
+    var beTopPoint = measurePoint(childParentData.beTop, child, childParentData, true, true, false);
+    var toTopPoint = measurePoint(childParentData.toTop, child, childParentData, true, true, true);
+    var beBottomPoint = measurePoint(childParentData.beBottom, child, childParentData, true, false, false);
+    var toBottomPoint = measurePoint(childParentData.toBottom, child, childParentData, true, false, true);
 
-    if (childParentData.beBottom != null) {
-      if (childParentData.beBottom == PARENT) {
-        yEndPoint = size.height;
-      } else {
-        var targetRenderBox = getRenderBoxByTag(childParentData.beBottom);
-        assert(targetRenderBox != null, 'No such tag!');
-        var targetParentData = targetRenderBox.parentData as StageParentData;
-        yEndPoint = targetParentData.offset.dy +
-            targetRenderBox.getMaxIntrinsicHeight(0);
+    [beTopPoint,toTopPoint,beBottomPoint,toBottomPoint].forEach((element) {
+      if(element != null){
+        if(yStartPoint == null)
+          yStartPoint = element;
+        else
+          yEndPoint = element;
       }
-    }
+    });
 
     if (yStartPoint == null && yEndPoint == null) {
       dy = 0.0;
@@ -135,6 +122,64 @@ class StageRender extends RenderBox
     return dy;
   }
 
+  double measurePoint(
+      String align,
+      RenderBox child,
+      StageParentData childParentData,
+      bool isVertical,
+      bool isStartPoint,
+      bool isOutSide) {
+    double point;
+    if (align != null) {
+      if (align == PARENT) {
+        point = 0;
+        if (!isStartPoint) {
+          if (isVertical) {
+            point = size.height;
+            if (isOutSide) {
+              point += child.getMaxIntrinsicHeight(0);
+            }
+          } else {
+            point = size.width;
+            if (isOutSide) {
+              point += child.getMaxIntrinsicWidth(0);
+            }
+          }
+        }
+      } else {
+        var targetRenderBox = getRenderBoxByTag(align);
+        assert(targetRenderBox != null, 'Tag is wrong!');
+        var targetParentData = targetRenderBox.parentData as StageParentData;
+        if (isVertical) {
+          point = targetParentData.offset.dy;
+          if (isStartPoint) {
+            if (isOutSide) {
+              point -= child.getMaxIntrinsicHeight(0);
+            }
+          } else {
+            point += targetRenderBox.getMaxIntrinsicHeight(0);
+            if(isOutSide){
+              point += child.getMaxIntrinsicHeight(0);
+            }
+          }
+        } else {
+          point = targetParentData.offset.dx;
+          if (isStartPoint) {
+            if (isOutSide) {
+              point -= child.getMaxIntrinsicWidth(0);
+            }
+          } else {
+            point += targetRenderBox.getMaxIntrinsicWidth(0);
+            if(isOutSide){
+              point += child.getMaxIntrinsicWidth(0);
+            }
+          }
+        }
+      }
+    }
+    return point;
+  }
+
   void layoutForRelativeChild(RenderBox child) {
     final StageParentData childParentData = child.parentData;
     var needLayout = true;
@@ -145,8 +190,10 @@ class StageRender extends RenderBox
       }
     });
     if (needLayout) {
-      assert(!childParentData.isMeasureAble(),'There can only be two or less constraints in the same direction');
-      childParentData.offset = Offset(measureDx(child,childParentData), measureDy(child,childParentData));
+      assert(childParentData.isMeasureAble(),
+          'There can only be two or less constraints in the same direction');
+      childParentData.offset = Offset(
+          measureDx(child, childParentData), measureDy(child, childParentData));
     }
   }
 
@@ -225,36 +272,36 @@ class StageParentData extends ContainerBoxParentData<RenderBox> {
   String beRight;
   EdgeInsets margin;
 
-  bool isMeasureAble(){
+  bool isMeasureAble() {
     List<String> horizontal = List();
     List<String> vertical = List();
-    if(toTop != null){
+    if (toTop != null) {
       vertical.add(toTop);
     }
-    if(beTop != null){
+    if (beTop != null) {
       vertical.add(beTop);
     }
-    if(toBottom != null){
+    if (toBottom != null) {
       vertical.add(toBottom);
     }
-    if(beBottom != null){
+    if (beBottom != null) {
       vertical.add(beBottom);
     }
 
-    if(toLeft != null){
+    if (toLeft != null) {
       horizontal.add(toLeft);
     }
-    if(toRight != null){
+    if (toRight != null) {
       horizontal.add(toRight);
     }
-    if(beLeft != null){
+    if (beLeft != null) {
       horizontal.add(beLeft);
     }
-    if(beRight != null){
+    if (beRight != null) {
       horizontal.add(beRight);
     }
 
-    return vertical.length <  3 && horizontal.length < 3;
+    return vertical.length < 3 && horizontal.length < 3;
   }
 
   bool isRelative() {
