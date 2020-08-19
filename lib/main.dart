@@ -10,43 +10,67 @@ void main() => runApp(MyApp());
 /// This Widget is the main application widget.
 class MyApp extends StatelessWidget {
   static const String _title = 'Flutter Code Sample';
+  double left = 0;
+  double top = 0;
+  double right = 0;
+  double bottom = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Page();
+  }
+}
+
+class Page extends StatefulWidget{
+
+  @override
+  State<StatefulWidget> createState() {
+    return PageState();
+  }
+
+}
+
+class PageState extends State<Page>{
+
+  static const String _title = 'Flutter Code Sample';
+  double left = 0;
+  double top = 0;
+  double right = 0;
+  double bottom = 0;
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: _title,
-      home: Scaffold(
-        body: Container(
-            color: Colors.black12,
-            child: StageLayout(
-              children: [
-                Relative("no2",
-                    beBottom: PARENT,
-                    beLeft: PARENT,
-                    margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
-                    child: Container(
-                      width: 50,
-                      height: 50,
-                      color: Colors.amber,
-                    )),
-                Relative("no1",
-                    beBottom: PARENT,
-                    beTop: PARENT,
-                    beLeft: PARENT,
-                    beRight: PARENT,
-                    child: Container(
-                      width: 300,
-                      height: 300,
-                      color: Colors.blue.withAlpha(50),
-                    )),
-                Relative("no3",
-                    toTop: "no2",
-                    beLeft: "no2",
-                    child: Container(
-                      width: 180,
-                      height: 180,
-                      color: Colors.green,
-                    )),
+        title: _title,
+        home: Scaffold(
+          body: Container(
+              color: Colors.black12,
+              child: StageLayout(
+                children: [
+//                  Relative("no2",
+//                      beBottom: PARENT,
+//                      beLeft: PARENT,
+//                      margin: EdgeInsets.fromLTRB(left, top, right, bottom),
+//                      child:  Container(
+//                        width: 50,
+//                        height: 50,
+//                        color: Colors.amber,
+//                      )),
+                  Relative("no1",
+                      beRight: PARENT,
+                      child: Container(
+                        width: 300,
+                        height: 300,
+                        color: Colors.blue,
+                      )),
+//                  Relative("no3",
+//                      toTop: "no2",
+//                      beLeft: "no2",
+//                      child: Container(
+//                        width: 180,
+//                        height: 180,
+//                        color: Colors.green,
+//                      )),
 
 //                Relative("no3",
 //                    beRight: "no2",
@@ -120,9 +144,12 @@ class MyApp extends StatelessWidget {
 //                      height: 60,
 //                      color: Colors.white70,
 //                    )),
-              ],
-            )),
-      ),
-    );
+                ],
+              )),
+        ),
+      );
+
   }
+
+
 }
