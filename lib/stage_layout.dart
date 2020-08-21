@@ -8,8 +8,16 @@ class StageLayout extends MultiChildRenderObjectWidget {
 
   @override
   RenderObject createRenderObject(BuildContext context) {
+    print('createRenderObject');
     return StageRender();
   }
+
+  @override
+  void updateRenderObject(BuildContext context, RenderObject renderObject) {
+    print('updateRenderObject');
+    super.updateRenderObject(context, renderObject);
+  }
+
 }
 
 const PARENT = "parent";
@@ -27,13 +35,27 @@ class StageRender extends RenderBox
       child.parentData = StageParentData();
   }
 
+
+  @override
+  bool hitTestChildren(BoxHitTestResult result, {Offset position}) {
+    return defaultHitTestChildren(result, position: position);
+  }
+
+
   @override
   void performLayout() {
+    print('performLayout');
     prepareRenderBoxes = List();
     readiedRenderBoxes = List();
     prepareRenderBoxes = getChildrenAsList();
     size = constraints.biggest;
     layoutChildren();
+  }
+
+  @override
+  void layout(Constraints constraints, {bool parentUsesSize = false}) {
+    super.layout(constraints, parentUsesSize :parentUsesSize);
+
   }
 
   void layoutChildren() {
@@ -239,24 +261,27 @@ class StageRender extends RenderBox
           'There can only be two or less constraints in the same direction');
 
       childParentData.offset = Offset(
-          measureDx(child, childParentData) + getOffsetX(childParentData.margin), measureDy(child, childParentData) + getOffsetY(childParentData.margin));
+          measureDx(child, childParentData) +
+              getOffsetX(childParentData.margin),
+          measureDy(child, childParentData) +
+              getOffsetY(childParentData.margin));
       return true;
     }
     return false;
   }
 
-  double getOffsetX(EdgeInsets margin){
+  double getOffsetX(EdgeInsets margin) {
     var x = 0.0;
-    if(margin != null){
-        x = margin.left - margin.right;
+    if (margin != null) {
+      x = margin.left - margin.right;
     }
     return x;
   }
 
-  double getOffsetY(EdgeInsets margin){
+  double getOffsetY(EdgeInsets margin) {
     var y = 0.0;
-    if(margin != null){
-        y = margin.top - margin.bottom;
+    if (margin != null) {
+      y = margin.top - margin.bottom;
     }
     return y;
   }
