@@ -3,7 +3,10 @@
 // This example shows a simple Container that can be panned and zoomed.
 
 import 'package:flutter/material.dart';
-import 'package:interactive/stage_layout.dart';
+import 'package:interactive/domain/base_actor.dart';
+import 'package:interactive/domain/base_temp.dart';
+import 'package:interactive/domain/container_temp.dart';
+import 'package:interactive/relative_layout.dart';
 
 import 'relative_movavle_widget.dart';
 
@@ -30,15 +33,30 @@ class Page extends StatefulWidget {
   }
 }
 
-
 class PageState extends State<Page> {
   static const String _title = 'Flutter Code Sample';
   double left = 0;
   double top = 0;
   double right = 0;
   double bottom = 0;
-  ReOffset margin = ReOffset(250,50);
+  ReOffset margin = ReOffset(250, 50);
   Color color = Colors.blue;
+
+  List<BaseActor> actors;
+
+  @override
+  void initState() {
+    super.initState();
+    actors = List();
+    actors.add(BaseActor('tag',
+        beLeft: PARENT,
+        beRight: PARENT,
+        child: ContainerTemp(height: 200, width: 200, color: 0xffFFD341)));
+    actors.add(BaseActor('tag1',
+        toBottom: PARENT,
+        beRight: PARENT,
+        child: ContainerTemp(height: 200, width: 200, color: 0xff33D341)));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,112 +65,29 @@ class PageState extends State<Page> {
       home: Scaffold(
         body: Container(
             color: Colors.black12,
-            child: StageLayout(
+            child: RelativeLayout(
               children: [
-                Relative("no2",
-                    beRight: "no1",
-                    beLeft: "no1",
-                    beTop: "no1",
-                    beBottom: "no1",
-                    margin: EdgeInsets.fromLTRB(left, top, right, bottom),
-                    child: Container(
-                      width: 200,
-                      height: 200,
-                      color: Colors.amber,
-                    )),
-                Relative("no1",
-                    beRight: PARENT,
+                Relative(
+                  'TAG1',
+                  beLeft: PARENT,
+                  beRight: PARENT,
+                  child:
+                      Container(color: Colors.yellow, width: 100, height: 100),
+                ),
+                actors[0].buildRelativeWidget(),
+                Relative( 'TAG2',
                     beLeft: PARENT,
-                    beTop: PARENT,
+                    beRight: PARENT,
                     beBottom: PARENT,
-                    child: Listener(
-                        onPointerDown: (det) {
-                          print("inwwwww");
-                          setState(() {
-                            margin = ReOffset(0, 50);
-                          });
-                        },
-                        child: Container(
-                          width: 300,
-                          height: 300,
-                          color: color.withAlpha(150),
-                        ))),
-                Relative("no3",
-                    beRight: "no2",
-                    beLeft: "no2",
-                    toTop: "no2",
-                    child: Container(
-                      width: 60,
-                      height: 60,
-                      color: Colors.green,
-                    )),
-                Relative("no4",
-                    beRight: "no2",
-                    beLeft: "no2",
-                    toBottom: "no2",
-                    child: Container(
-                      width: 60,
-                      height: 60,
-                      color: Colors.green,
-                    )),
-                Relative("no5",
-                    toLeft: "no2",
-                    beTop: "no2",
-                    beBottom: "no2",
-                    child: Container(
-                      width: 60,
-                      height: 60,
-                      color: Colors.green,
-                    )),
-                Relative("no6",
-                    toRight: "no2",
-                    beTop: "no2",
-                    beBottom: "no2",
-                    child: Container(
-                      width: 60,
-                      height: 60,
-                      color: Colors.green,
-                    )),
-                Relative("no6",
-                    beTop: "no2",
-                    beLeft: "no2",
-                    beRight: "no2",
-                    child: Container(
-                      width: 60,
-                      height: 60,
-                      color: Colors.white70,
-                    )),
-                Relative("no7",
-                    beBottom: "no2",
-                    beLeft: "no2",
-                    beRight: "no2",
-                    child: Container(
-                      width: 60,
-                      height: 60,
-                      color: Colors.white70,
-                    )),
-                Relative("no8",
-                    beBottom: "no2",
-                    beRight: "no2",
-                    beTop: "no2",
-                    child: Container(
-                      width: 60,
-                      height: 60,
-                      color: Colors.white70,
-                    )),
-                Relative("no9",
-                    beBottom: "no2",
-                    beLeft: "no2",
-                    beTop: "no2",
-                    child: Container(
-                      width: 60,
-                      height: 60,
-                      color: color,
-                    )),
-                RelativeMovableWidget(margin),
+                    beTop: PARENT,
+                    child: actors[0].child.buildWidget()),
               ],
             )),
       ),
     );
+  }
+
+  List<Widget> getActors() {
+    return actors.map((e) => e.buildRelativeWidget()).toList();
   }
 }

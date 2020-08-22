@@ -1,40 +1,51 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'dart:math' as math;
 
-class StageLayout extends MultiChildRenderObjectWidget {
-  StageLayout({Key key, List<Widget> children = const <Widget>[]})
+class RelativeLayout extends MultiChildRenderObjectWidget {
+
+  MainAxisSize mainAxisSize;
+
+ RelativeLayout({Key key, List<Widget> children = const <Widget>[],this.mainAxisSize})
       : super(key: key, children: children);
+
 
   @override
   RenderObject createRenderObject(BuildContext context) {
-    print('createRenderObject');
-    return StageRender();
+    return RenderRelative(mainAxisSize: mainAxisSize);
   }
 
   @override
-  void updateRenderObject(BuildContext context, RenderObject renderObject) {
+  void updateRenderObject(BuildContext context, RenderRelative stageRender) {
     print('updateRenderObject');
-    super.updateRenderObject(context, renderObject);
+    super.updateRenderObject(context, stageRender);
+    stageRender.update();
   }
 
 }
 
 const PARENT = "parent";
 
-class StageRender extends RenderBox
+class RenderRelative extends RenderBox
     with
-        ContainerRenderObjectMixin<RenderBox, StageParentData>,
-        RenderBoxContainerDefaultsMixin<RenderBox, StageParentData> {
+        ContainerRenderObjectMixin<RenderBox, RelativeParentData>,
+        RenderBoxContainerDefaultsMixin<RenderBox, RelativeParentData> {
   List<RenderBox> prepareRenderBoxes;
   List<RenderBox> readiedRenderBoxes;
+  MainAxisSize mainAxisSize;
+
+  RenderRelative({this.mainAxisSize});
 
   @override
   void setupParentData(RenderBox child) {
-    if (child.parentData is! StageParentData)
-      child.parentData = StageParentData();
+    if (child.parentData is! RelativeParentData)
+      child.parentData = RelativeParentData();
   }
 
+  void update(){
+    markNeedsLayout();
+  }
 
   @override
   bool hitTestChildren(BoxHitTestResult result, {Offset position}) {
@@ -44,18 +55,17 @@ class StageRender extends RenderBox
 
   @override
   void performLayout() {
-    print('performLayout');
     prepareRenderBoxes = List();
     readiedRenderBoxes = List();
     prepareRenderBoxes = getChildrenAsList();
-    size = constraints.biggest;
+    if(mainAxisSize != null){
+      if(mainAxisSize == MainAxisSize.min){
+        size = constraints.smallest;
+      }
+    }else{
+      size = constraints.biggest;
+    }
     layoutChildren();
-  }
-
-  @override
-  void layout(Constraints constraints, {bool parentUsesSize = false}) {
-    super.layout(constraints, parentUsesSize :parentUsesSize);
-
   }
 
   void layoutChildren() {
@@ -63,7 +73,7 @@ class StageRender extends RenderBox
     int hadLayoutChildCount = 0;
     for (int i = 0; i < prepareRenderBoxes.length; i++) {
       RenderBox child = prepareRenderBoxes[i];
-      final StageParentData childParentData = child.parentData;
+      final RelativeParentData childParentData = child.parentData;
       if (!childParentData.isRelative()) {
         hasNonRelativeChildren = true;
       }
@@ -84,14 +94,14 @@ class StageRender extends RenderBox
       } else {
         var unLayoutChildTag = "";
         prepareRenderBoxes.forEach((element) {
-          unLayoutChildTag += (element.parentData as StageParentData).tag + " ";
+          unLayoutChildTag += (element.parentData as RelativeParentData).tag + " ";
         });
         assert(false, 'Tag $unLayoutChildTag can not sure layout.');
       }
     }
   }
 
-  double measureDx(RenderBox child, StageParentData childParentData) {
+  double measureDx(RenderBox child, RelativeParentData childParentData) {
     double xStartPoint;
     double xEndPoint;
     double dx;
@@ -127,7 +137,7 @@ class StageRender extends RenderBox
     return dx;
   }
 
-  double measureDy(RenderBox child, StageParentData childParentData) {
+  double measureDy(RenderBox child, RelativeParentData childParentData) {
     double yStartPoint;
     double yEndPoint;
     double dy;
@@ -166,7 +176,7 @@ class StageRender extends RenderBox
   double measurePoint(
       String align,
       RenderBox child,
-      StageParentData childParentData,
+      RelativeParentData childParentData,
       bool isVertical,
       bool isStartPoint,
       bool isOutSide) {
@@ -208,7 +218,7 @@ class StageRender extends RenderBox
       } else {
         var targetRenderBox = getRenderBoxByTag(align);
         assert(targetRenderBox != null, 'Tag is wrong!');
-        var targetParentData = targetRenderBox.parentData as StageParentData;
+        var targetParentData = targetRenderBox.parentData as RelativeParentData;
         if (isVertical) {
           point = targetParentData.offset.dy;
           if (isStartPoint) {
@@ -248,7 +258,7 @@ class StageRender extends RenderBox
   }
 
   bool layoutForRelativeChild(RenderBox child) {
-    final StageParentData childParentData = child.parentData;
+    final RelativeParentData childParentData = child.parentData;
     var needLayout = true;
     var tags = childParentData.getRelyChildrenTags();
     tags.forEach((tag) {
@@ -288,7 +298,7 @@ class StageRender extends RenderBox
 
   RenderBox getRenderBoxByTag(String tag) {
     for (RenderBox child in readiedRenderBoxes) {
-      final StageParentData childParentData = child.parentData;
+      final RelativeParentData childParentData = child.parentData;
       if (childParentData.tag == tag) {
         return child;
       }
@@ -331,18 +341,6 @@ class RelativeWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (padding != null)
-      return Relative(tag,
-          toTop: toTop,
-          toBottom: toBottom,
-          toLeft: toLeft,
-          toRight: toRight,
-          beTop: beTop,
-          beBottom: beBottom,
-          beLeft: beLeft,
-          beRight: beRight,
-          child: Padding(padding: padding, child: child),
-          key: key);
     return Relative(tag,
         toTop: toTop,
         toBottom: toBottom,
@@ -357,7 +355,7 @@ class RelativeWidget extends StatelessWidget {
   }
 }
 
-class Relative extends ParentDataWidget<StageParentData> {
+class Relative extends ParentDataWidget<RelativeParentData> {
   final Widget child;
   final Key key;
   final String tag;
@@ -387,25 +385,63 @@ class Relative extends ParentDataWidget<StageParentData> {
 
   @override
   void applyParentData(RenderObject renderObject) {
-    final StageParentData parentData =
-        renderObject.parentData as StageParentData;
-    parentData.tag = tag;
-    parentData.margin = margin;
-    parentData.toTop = toTop;
-    parentData.toBottom = toBottom;
-    parentData.toLeft = toLeft;
-    parentData.toRight = toRight;
-    parentData.beTop = beTop;
-    parentData.beBottom = beBottom;
-    parentData.beLeft = beLeft;
-    parentData.beRight = beRight;
+    final RelativeParentData parentData =
+        renderObject.parentData as RelativeParentData;
+    var needLayout = false;
+    if( parentData.tag != tag){
+      parentData.tag = tag;
+      needLayout = true;
+    }
+    if( parentData.margin != margin){
+      parentData.margin = margin;
+      needLayout = true;
+    }
+    if( parentData.toTop != toTop){
+      parentData.toTop = toTop;
+      needLayout = true;
+    }
+    if( parentData.toBottom != toBottom){
+      parentData.toBottom = toBottom;
+      needLayout = true;
+    }
+    if( parentData.toLeft != toLeft){
+      parentData.toLeft = toLeft;
+      needLayout = true;
+    }
+    if( parentData.toRight != toRight){
+      parentData.toRight = toRight;
+      needLayout = true;
+    }
+    if( parentData.beTop != beTop){
+      parentData.beTop = beTop;
+      needLayout = true;
+    }
+    if( parentData.beBottom != beBottom){
+      parentData.beBottom = beBottom;
+      needLayout = true;
+    }
+    if( parentData.beLeft != beLeft){
+      parentData.beLeft = beLeft;
+      needLayout = true;
+    }
+    if( parentData.beRight != beRight){
+      parentData.beRight = beRight;
+      needLayout = true;
+    }
+
+    if(needLayout){
+      final AbstractNode targetParent = renderObject.parent;
+      if (targetParent is RenderObject)
+        targetParent.markNeedsLayout();
+    }
   }
 
+
   @override
-  Type get debugTypicalAncestorWidgetClass => StageLayout;
+  Type get debugTypicalAncestorWidgetClass => RelativeLayout;
 }
 
-class StageParentData extends ContainerBoxParentData<RenderBox> {
+class RelativeParentData extends ContainerBoxParentData<RenderBox> {
   String tag;
   String toTop;
   String toBottom;
