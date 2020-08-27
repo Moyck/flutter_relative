@@ -19,7 +19,7 @@ class RelativeMovableWidgetState extends State<RelativeMovableWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Relative(widget._baseActor.tag,
+    return  Relative(widget._baseActor.tag,
         beRight: widget._baseActor.beRight,
         beLeft: widget._baseActor.beLeft,
         beTop: widget._baseActor.beTop,
@@ -36,8 +36,7 @@ class RelativeMovableWidgetState extends State<RelativeMovableWidget> {
               widget._baseActor.marginTop += ev.delta.dy;
               setState(() {});
             },
-            child: RelativeLayout(
-              mainAxisSize: MainAxisSize.min,
+            child: Container( child:  RelativeLayout(
               children: [
                 Relative('re', child: widget._baseActor.child.buildWidget()),
                 Relative('re1',
@@ -81,7 +80,7 @@ class RelativeMovableWidgetState extends State<RelativeMovableWidget> {
                       height: 30,
                     )),
               ],
-            )));
+            ))));
   }
 }
 

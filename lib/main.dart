@@ -51,11 +51,9 @@ class PageState extends State<Page> {
     actors.add(BaseActor('tag',
         beLeft: PARENT,
         beRight: PARENT,
-        child: ContainerTemp(height: 200, width: 200, color: 0xffFFD341)));
-    actors.add(BaseActor('tag1',
-        toBottom: PARENT,
-        beRight: PARENT,
-        child: ContainerTemp(height: 200, width: 200, color: 0xff33D341)));
+        beTop: PARENT,
+        beBottom: PARENT,
+        child: ContainerTemp(height: 100, width: 100, color: 0xffFFD341)));
   }
 
   @override
@@ -67,20 +65,7 @@ class PageState extends State<Page> {
             color: Colors.black12,
             child: RelativeLayout(
               children: [
-                Relative(
-                  'TAG1',
-                  beLeft: PARENT,
-                  beRight: PARENT,
-                  child:
-                      Container(color: Colors.yellow, width: 100, height: 100),
-                ),
                 actors[0].buildRelativeWidget(),
-                Relative( 'TAG2',
-                    beLeft: PARENT,
-                    beRight: PARENT,
-                    beBottom: PARENT,
-                    beTop: PARENT,
-                    child: actors[0].child.buildWidget()),
               ],
             )),
       ),
@@ -90,4 +75,5 @@ class PageState extends State<Page> {
   List<Widget> getActors() {
     return actors.map((e) => e.buildRelativeWidget()).toList();
   }
+
 }

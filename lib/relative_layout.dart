@@ -4,25 +4,19 @@ import 'package:flutter/rendering.dart';
 import 'dart:math' as math;
 
 class RelativeLayout extends MultiChildRenderObjectWidget {
-
-  MainAxisSize mainAxisSize;
-
- RelativeLayout({Key key, List<Widget> children = const <Widget>[],this.mainAxisSize})
+  RelativeLayout({Key key, List<Widget> children = const <Widget>[]})
       : super(key: key, children: children);
-
 
   @override
   RenderObject createRenderObject(BuildContext context) {
-    return RenderRelative(mainAxisSize: mainAxisSize);
+    return RenderRelative();
   }
 
   @override
   void updateRenderObject(BuildContext context, RenderRelative stageRender) {
-    print('updateRenderObject');
     super.updateRenderObject(context, stageRender);
     stageRender.update();
   }
-
 }
 
 const PARENT = "parent";
@@ -33,9 +27,8 @@ class RenderRelative extends RenderBox
         RenderBoxContainerDefaultsMixin<RenderBox, RelativeParentData> {
   List<RenderBox> prepareRenderBoxes;
   List<RenderBox> readiedRenderBoxes;
-  MainAxisSize mainAxisSize;
 
-  RenderRelative({this.mainAxisSize});
+  RenderRelative();
 
   @override
   void setupParentData(RenderBox child) {
@@ -43,7 +36,7 @@ class RenderRelative extends RenderBox
       child.parentData = RelativeParentData();
   }
 
-  void update(){
+  void update() {
     markNeedsLayout();
   }
 
@@ -52,19 +45,50 @@ class RenderRelative extends RenderBox
     return defaultHitTestChildren(result, position: position);
   }
 
+  @override
+  double computeMinIntrinsicWidth(double height) {
+    return getIntrinsicDimension(
+        firstChild, (RenderBox child) => child.getMinIntrinsicWidth(height));
+  }
+
+  @override
+  double computeMaxIntrinsicWidth(double height) {
+    return getIntrinsicDimension(
+        firstChild, (RenderBox child) => child.getMaxIntrinsicWidth(height));
+  }
+
+  @override
+  double computeMinIntrinsicHeight(double width) {
+    return getIntrinsicDimension(
+        firstChild, (RenderBox child) => child.getMinIntrinsicHeight(width));
+  }
+
+  @override
+  double computeMaxIntrinsicHeight(double width) {
+    return getIntrinsicDimension(
+        firstChild, (RenderBox child) => child.getMaxIntrinsicHeight(width));
+  }
+
+  /// Helper function for calculating the intrinsics metrics of a Stack.
+  static double getIntrinsicDimension(
+      RenderBox firstChild, double mainChildSizeGetter(RenderBox child)) {
+    double extent = 0.0;
+    RenderBox child = firstChild;
+    while (child != null) {
+      final RelativeParentData childParentData =
+          child.parentData as RelativeParentData;
+      extent = math.max(extent, mainChildSizeGetter(child));
+      child = childParentData.nextSibling;
+    }
+    return extent;
+  }
 
   @override
   void performLayout() {
     prepareRenderBoxes = List();
     readiedRenderBoxes = List();
     prepareRenderBoxes = getChildrenAsList();
-    if(mainAxisSize != null){
-      if(mainAxisSize == MainAxisSize.min){
-        size = constraints.smallest;
-      }
-    }else{
-      size = constraints.biggest;
-    }
+    size = constraints.biggest;
     layoutChildren();
   }
 
@@ -94,7 +118,8 @@ class RenderRelative extends RenderBox
       } else {
         var unLayoutChildTag = "";
         prepareRenderBoxes.forEach((element) {
-          unLayoutChildTag += (element.parentData as RelativeParentData).tag + " ";
+          unLayoutChildTag +=
+              (element.parentData as RelativeParentData).tag + " ";
         });
         assert(false, 'Tag $unLayoutChildTag can not sure layout.');
       }
@@ -388,54 +413,52 @@ class Relative extends ParentDataWidget<RelativeParentData> {
     final RelativeParentData parentData =
         renderObject.parentData as RelativeParentData;
     var needLayout = false;
-    if( parentData.tag != tag){
+    if (parentData.tag != tag) {
       parentData.tag = tag;
       needLayout = true;
     }
-    if( parentData.margin != margin){
+    if (parentData.margin != margin) {
       parentData.margin = margin;
       needLayout = true;
     }
-    if( parentData.toTop != toTop){
+    if (parentData.toTop != toTop) {
       parentData.toTop = toTop;
       needLayout = true;
     }
-    if( parentData.toBottom != toBottom){
+    if (parentData.toBottom != toBottom) {
       parentData.toBottom = toBottom;
       needLayout = true;
     }
-    if( parentData.toLeft != toLeft){
+    if (parentData.toLeft != toLeft) {
       parentData.toLeft = toLeft;
       needLayout = true;
     }
-    if( parentData.toRight != toRight){
+    if (parentData.toRight != toRight) {
       parentData.toRight = toRight;
       needLayout = true;
     }
-    if( parentData.beTop != beTop){
+    if (parentData.beTop != beTop) {
       parentData.beTop = beTop;
       needLayout = true;
     }
-    if( parentData.beBottom != beBottom){
+    if (parentData.beBottom != beBottom) {
       parentData.beBottom = beBottom;
       needLayout = true;
     }
-    if( parentData.beLeft != beLeft){
+    if (parentData.beLeft != beLeft) {
       parentData.beLeft = beLeft;
       needLayout = true;
     }
-    if( parentData.beRight != beRight){
+    if (parentData.beRight != beRight) {
       parentData.beRight = beRight;
       needLayout = true;
     }
 
-    if(needLayout){
+    if (needLayout) {
       final AbstractNode targetParent = renderObject.parent;
-      if (targetParent is RenderObject)
-        targetParent.markNeedsLayout();
+      if (targetParent is RenderObject) targetParent.markNeedsLayout();
     }
   }
-
 
   @override
   Type get debugTypicalAncestorWidgetClass => RelativeLayout;
