@@ -17,6 +17,7 @@ class BaseActor {
   String beRight;
   double marginLeft;
   double marginTop;
+  bool isSelected = false;
 
   BaseActor(this.tag,
       {this.child,
