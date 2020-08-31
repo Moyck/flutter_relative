@@ -43,7 +43,7 @@ class RelativeMovableWidgetState extends State<RelativeMovableWidget> {
             child: !widget._baseActor.isSelected
                 ? widget._baseActor.child.buildWidget()
                 : Container(
-                    child: RelativeLayout(
+                child: RelativeLayout(
                     children: [
                       Relative('re',
                           child: widget._baseActor.child.buildWidget()),

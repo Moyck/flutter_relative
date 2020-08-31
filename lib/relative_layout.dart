@@ -40,6 +40,7 @@ class RenderRelative extends RenderBox
     markNeedsLayout();
   }
 
+
   @override
   bool hitTestChildren(BoxHitTestResult result, {Offset position}) {
     return defaultHitTestChildren(result, position: position);
@@ -158,7 +159,6 @@ class RenderRelative extends RenderBox
           math.min(xStartPoint, xEndPoint) -
           child.getMaxIntrinsicWidth(0) / 2;
     }
-
     return dx;
   }
 

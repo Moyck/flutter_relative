@@ -21,11 +21,11 @@ class StageProvider with ChangeNotifier {
         beTop: PARENT,
         beBottom: PARENT,
         child: ContainerTemp(height: 100, width: 100, color: 0xffFFD341)),
-    BaseActor('tag',
-        beLeft: PARENT,
-        beRight: PARENT,
-        beTop: PARENT,
-        child: ContainerTemp(height: 100, width: 100, color: 0xff399555))
+//    BaseActor('tag',
+//        beLeft: PARENT,
+//        beRight: PARENT,
+//        beTop: PARENT,
+//        child: ContainerTemp(height: 100, width: 100, color: 0xff399555))
   ];
 
   void changeCurrentActor(BaseActor baseActor) {
