@@ -46,7 +46,6 @@ class PageState extends State<Page> {
   ReOffset margin = ReOffset(250, 50);
   Color color = Colors.blue;
 
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(

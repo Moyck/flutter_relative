@@ -27,8 +27,8 @@ class RenderRelative extends RenderBox
         RenderBoxContainerDefaultsMixin<RenderBox, RelativeParentData> {
   List<RenderBox> prepareRenderBoxes;
   List<RenderBox> readiedRenderBoxes;
-
-  RenderRelative();
+  double offsetX = 0;
+  double offsetY = 0;
 
   @override
   void setupParentData(RenderBox child) {
@@ -37,6 +37,8 @@ class RenderRelative extends RenderBox
   }
 
   void update() {
+    offsetX = 0;
+    offsetY = 0;
     markNeedsLayout();
   }
 
@@ -66,6 +68,7 @@ class RenderRelative extends RenderBox
 
   @override
   double computeMaxIntrinsicHeight(double width) {
+    print('computeMaxIntrinsicHeight');
     return getIntrinsicDimension(
         firstChild, (RenderBox child) => child.getMaxIntrinsicHeight(width));
   }
@@ -124,6 +127,13 @@ class RenderRelative extends RenderBox
         });
         assert(false, 'Tag $unLayoutChildTag can not sure layout.');
       }
+    } else {
+      readiedRenderBoxes.forEach((renderBox) {
+        var relativeParentData = renderBox.parentData as RelativeParentData;
+        relativeParentData.offset = Offset(
+            relativeParentData.offset.dx + offsetX.abs(),
+            relativeParentData.offset.dy + offsetY.abs());
+      });
     }
   }
 
@@ -140,6 +150,9 @@ class RenderRelative extends RenderBox
         childParentData.beRight, child, childParentData, false, false, false);
     var toRightPoint = measurePoint(
         childParentData.toRight, child, childParentData, false, false, true);
+
+    print(
+        '$beLeftPoint, $toLeftPoint, $beRightPoint, $toRightPoint ${child.getMaxIntrinsicWidth(0)}');
 
     [beLeftPoint, toLeftPoint, beRightPoint, toRightPoint].forEach((element) {
       if (element != null) {
@@ -300,6 +313,14 @@ class RenderRelative extends RenderBox
               getOffsetX(childParentData.margin),
           measureDy(child, childParentData) +
               getOffsetY(childParentData.margin));
+
+      if (childParentData.offset.dx < 0) {
+        offsetX = math.min(offsetX, childParentData.offset.dx);
+      }
+      if (childParentData.offset.dy < 0) {
+        offsetY = math.min(offsetY, childParentData.offset.dy);
+      }
+
       return true;
     }
     return false;
